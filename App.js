@@ -1,11 +1,5 @@
 import React, {Component} from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  TextInput,
-  FlatList,
-} from 'react-native';
+import {Text, View, StyleSheet, TextInput, FlatList} from 'react-native';
 import {Button, Icon} from 'native-base';
 import DeviceInfo from 'react-native-device-info';
 import mqtt from './node_modules/mqtt/dist/mqtt';
@@ -59,9 +53,7 @@ const msgStyles = StyleSheet.create({
   },
 });
 
-const renderItem = ({item}) => (
-  <MessageView {...item} />
-)
+const renderItem = ({item}) => <MessageView {...item} />;
 
 const TOPIC = 'hcmiuiot/chat';
 export default class App extends Component {
@@ -70,8 +62,11 @@ export default class App extends Component {
     this.state = {
       input: '',
       msg: [],
+      isFormValid: false,
     };
+  }
 
+  componentDidMount() {
     this.deviceID = DeviceInfo.getUniqueId();
     // mqtt
     this.client = mqtt.connect('ws://broker.hivemq.com:8000/mqtt');
@@ -104,6 +99,12 @@ export default class App extends Component {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.input !== prevState.input) {
+      this.validateForm();
+    }
+  }
+
   handdleInputMsg = (input) => {
     this.setState({input});
   };
@@ -112,6 +113,14 @@ export default class App extends Component {
     let text = this.state.input;
     this.client.publish(TOPIC, JSON.stringify({deviceID: this.deviceID, text}));
     this.setState({input: ''});
+  };
+
+  validateForm = () => {
+    if (this.state.input.trim().length) {
+      this.setState({isFormValid: true});
+    } else {
+      this.setState({isFormValid: false});
+    }
   };
 
   render() {
@@ -135,8 +144,17 @@ export default class App extends Component {
             onChangeText={this.handdleInputMsg}
             onSubmitEditing={this.handdleSendMsg}
           />
-          <Button rounded info style={styles.btn} onPress={this.handdleSendMsg}>
-            <Icon type="FontAwesome" name="paper-plane" />
+          <Button
+            rounded
+            info
+            style={styles.btn}
+            onPress={this.handdleSendMsg}
+            disabled={!this.state.isFormValid}>
+            <Icon
+              type="FontAwesome"
+              name="paper-plane"
+              style={{color: 'white'}}
+            />
           </Button>
         </View>
       </View>
@@ -165,6 +183,7 @@ const styles = StyleSheet.create({
     height: 40,
     flex: 8,
     backgroundColor: 'white',
+    fontSize: 17,
   },
   btn: {
     flex: 3,
