@@ -1,5 +1,11 @@
 import React, {Component} from 'react';
-import {Text, View, StyleSheet, TextInput, FlatList} from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  FlatList,
+} from 'react-native';
 import {Button, Icon} from 'native-base';
 import DeviceInfo from 'react-native-device-info';
 import mqtt from './node_modules/mqtt/dist/mqtt';
@@ -52,6 +58,10 @@ const msgStyles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+const renderItem = ({item}) => (
+  <MessageView {...item} />
+)
 
 const TOPIC = 'hcmiuiot/chat';
 export default class App extends Component {
@@ -109,13 +119,14 @@ export default class App extends Component {
       <View style={styles.container}>
         <FlatList
           style={styles.msgView}
-          renderItem={({item}) => <MessageView {...item} />}
+          renderItem={renderItem}
           data={this.state.msg}
-          keyExtractor={(item) => item.key}
+          keyExtractor={(item, index) => index.toString()}
           ref={(ref) => (this.flatList = ref)}
           onContentSizeChange={() =>
             this.flatList.scrollToEnd({animated: true})
           }
+          onLayout={() => this.flatList.scrollToEnd({animated: true})}
         />
         <View style={styles.msgInput}>
           <TextInput
@@ -137,11 +148,11 @@ const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFill,
     backgroundColor: '#ebe6ff',
+    paddingTop: 10,
   },
   msgView: {
     marginHorizontal: 15,
     marginBottom: 10,
-    height: 100,
   },
   msgInput: {
     backgroundColor: '#47476b',
